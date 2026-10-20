@@ -58,35 +58,33 @@ async function excluirTutor() {
   if (resposta.ok) router.push('/tutores');
   else alert('Não foi possível remover o tutor.');
 }
-
-onMounted(carregarDados);
 async function excluirPet(id) {
   const confirmar = window.confirm(
     'Deseja realmente excluir este pet?'
-  )
+  );
 
-  if (!confirmar) return
+  if (!confirmar) return;
 
   try {
-    const resposta = await fetch(
-      `http://localhost:3000/pets/${id}`,
-      {
-        method: 'DELETE'
-      }
-    )
+    const resposta = await fetch(`${API_URL}/pets/${id}`, {
+      method: 'DELETE',
+    });
 
     if (!resposta.ok) {
-      throw new Error('Erro ao excluir pet')
+      throw new Error('Erro ao excluir pet');
     }
 
-    // Atualiza a lista na tela
     pets.value = pets.value.filter(
-      pet => pet.id !== id
-    )
+      pet => String(pet.id) !== String(id)
+    );
+
   } catch (erro) {
-    alert('Não foi possível excluir o pet.')
+    console.error(erro);
+    alert('Não foi possível excluir o pet.');
   }
 }
+
+onMounted(carregarDados);
 </script>
 
 <template>
@@ -121,9 +119,15 @@ async function excluirPet(id) {
     <div v-else class="table-responsive">
       <table class="table table-striped table-hover align-middle">
         <thead class="table-light"><tr><th>ID</th><th>Nome</th><th>Espécie</th><th>Ação</th></tr></thead>
-        <tbody><tr v-for="pet in pets" :key="pet.id"><td>{{ pet.id }}</td><td>{{ pet.nome }}</td><td>{{ pet.especie }}</td><td><button @click="excluirPet(pet.id)">
-      Excluir
-    </button></td></tr></tbody>
+   <td>
+  <button
+    type="button"
+    class="btn btn-outline-danger btn-sm"
+    @click="excluirPet(pet.id)"
+  >
+    Excluir
+  </button>
+</td>
       </table>
     </div>
   </section>

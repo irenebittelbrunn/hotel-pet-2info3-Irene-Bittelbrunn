@@ -1,108 +1,129 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 
 const API_URL = 'http://localhost:3000';
-const pets = ref([]);
-('');
-const tutores = ref([]);
-async function carregarDados() {
-  const respostaPets = await fetch(`${API_URL}/pets`);
-  pets.value = await respostaPets.json();
 
-  const respostaTutores = await fetch(`${API_URL}/tutores`);
-  tutores.value = await respostaTutores.json();
+const pets = ref([]);
+const tutores = ref([]);
+
+async function carregarDados() {
+  try {
+    const [respostaPets, respostaTutores] = await Promise.all([
+      fetch(`${API_URL}/pets`),
+      fetch(`${API_URL}/tutores`),
+    ]);
+
+    if (!respostaPets.ok || !respostaTutores.ok) {
+      throw new Error('Erro ao carregar os dados.');
+    }
+
+    pets.value = await respostaPets.json();
+    tutores.value = await respostaTutores.json();
+  } catch (erro) {
+    console.error(erro);
+    alert('Não foi possível carregar os pets e tutores.');
+  }
 }
 
 function nomeDoTutor(tutorId) {
-  for (const tutor of tutores.value) {
-    if (tutor.id === tutorId) {
-      return tutor.nome;
-    }
-  }
-  return 'Não Especificado';
+  const tutor = tutores.value.find(
+    (tutor) => String(tutor.id) === String(tutorId)
+  );
+
+  return tutor ? tutor.nome : 'Não especificado';
 }
-onMounted(carregarDados);
 
 async function excluirPet(id) {
   const confirmar = window.confirm(
     'Deseja realmente excluir este pet?'
-  )
+  );
 
-  if (!confirmar) return
+  if (!confirmar) return;
 
   try {
-    const resposta = await fetch(
-      `http://localhost:3000/pets/${id}`,
-      {
-        method: 'DELETE'
-      }
-    )
+    const resposta = await fetch(`${API_URL}/pets/${id}`, {
+      method: 'DELETE',
+    });
 
     if (!resposta.ok) {
-      throw new Error('Erro ao excluir pet')
+      throw new Error('Erro ao excluir pet.');
     }
 
-    // Atualiza a lista na tela
     pets.value = pets.value.filter(
-      pet => pet.id !== id
-    )
+      (pet) => String(pet.id) !== String(id)
+    );
   } catch (erro) {
-    alert('Não foi possível excluir o pet.')
+    console.error(erro);
+    alert('Não foi possível excluir o pet.');
   }
 }
+
+onMounted(carregarDados);
 </script>
 
 <template>
   <div>
     <header class="mb-4">
-      <h1 class="text-2xl font-bold">Listagem de Pets</h1>
+      <h1 class="text-2xl fw-bold">Listagem de Pets</h1>
       <p class="text-body-secondary mb-0">
-        Listagem dos Pets cadastrados no sistema.
+        Listagem dos pets cadastrados no sistema.
       </p>
     </header>
 
     <RouterLink
-      class="btn btn-primary"
+      class="btn btn-primary mb-3"
       :to="{ name: 'addPet' }"
     >
       Adicionar Pet
     </RouterLink>
-  </div>
-  <table class="table table-striped table-hover">
-    <thead>
-      <tr>
-        <th>Id</th>
-        <th>Nome</th>
-        <th>Espécie</th>
-        <th>Tutor</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-  <tr v-for="pet in pets" :key="pet.id">
-  <td>{{ pet.id }}</td>
-  <td>{{ pet.nome }}</td>
-  <td>{{ pet.especie }}</td>
-  <td>
-    <button @click="excluirPet(pet.id)">
-      Excluir
-    </button>
-  </td>
-</tr>
-    </tbody>
-  </table>
-</template>
-<style>
-.btn-excluir {
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 5px;
-  cursor: pointer;
-}
 
-.btn-excluir:hover {
-  background-color: #b91c1c;
-}
-</style>
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Espécie</th>
+            <th>Tutor</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="pet in pets" :key="pet.id">
+            <td>{{ pet.id }}</td>
+            <td>{{ pet.nome }}</td>
+            <td>{{ pet.especie }}</td>
+            <td>{{ nomeDoTutor(pet.tutorId) }}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <RouterLink
+                  class="btn btn-outline-primary btn-sm"
+                  :to="`/pets/${pet.id}`"
+                >
+                  Visualizar
+                </RouterLink>
+
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  @click="excluirPet(pet.id)"
+                >
+                  Excluir
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr v-if="pets.length === 0">
+            <td colspan="5" class="text-center text-secondary py-4">
+              Nenhum pet cadastrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+```
