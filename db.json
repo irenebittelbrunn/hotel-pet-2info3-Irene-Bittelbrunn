@@ -1,0 +1,27 @@
+{
+  "tutores": [
+    {
+      "nome": "Irene Bittelbrunn",
+      "telefone": "47997724796",
+      "cpfCnpj": "15144709931",
+      "email": "irenebittelbrunnp@gmail.com",
+      "dataNascimento": "2000-11-05",
+      "rua": "Rua Fátima",
+      "numero": "1703",
+      "bairro": "Fátima",
+      "cidade": "Joinville",
+      "estado": "SC",
+      "cep": "89229101",
+      "id": "4_1vZqO2QTo"
+    }
+  ],
+  "pets": [
+    {
+      "id": "2",
+      "nome": "Nino",
+      "especie": "Gato",
+      "tutorId": "1"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
